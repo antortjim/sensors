@@ -31,7 +31,7 @@ class Sensor(threading.Thread):
     _freq = FREQUENCY  # seconds
 
     def __init__(
-        self, logfile=None, verbose=False, port=None, *args, **kwargs
+        self, logfile=None, verbose=False, port=None, baudrate=9600, *args, **kwargs
     ):
 
         self.reset()
@@ -39,7 +39,7 @@ class Sensor(threading.Thread):
         if port is None:
             port = self.detect()
 
-        self._ser = serial.Serial(port, timeout=TIMEOUT)
+        self._ser = serial.Serial(port, timeout=TIMEOUT, baudrate=baudrate)
         self._logfile = logfile
         self._verbose = verbose
         super().__init__(*args, **kwargs)

@@ -21,6 +21,10 @@ def get_parser(ap=None):
     ap.add_argument(
         "--json-port", dest="json_port", required=False, default=9000, type=int,
     )
+    ap.add_argument(
+        "--baudrate", default=9600, type=int,
+    )
+ 
     ap.add_argument("--logfile", required=False, default="/temp_log.txt")
     ap.add_argument("--thread", default=False, action="store_true")
     return ap
@@ -42,7 +46,7 @@ def main(args=None):
     if args is None:
         args = get_parser().parse_args()
 
-    sensor = Sensor(logfile=args.logfile, port=args.arduino_port)
+    sensor = Sensor(logfile=args.logfile, port=args.arduino_port, baudrate=args.baudrate)
 
     if args.thread:
         sensor.start()
