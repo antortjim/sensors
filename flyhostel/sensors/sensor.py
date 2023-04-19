@@ -7,10 +7,12 @@ import traceback
 import json
 
 import serial
+import cv2
 
 from flyhostel.arduino import utils
 from flyhostel.arduino import Identifier
 import flyhostel
+from .camera import run as camera_run, CAMERA_LIGHT
 
 TIMEOUT = 5
 MAX_COUNT=3
@@ -40,6 +42,7 @@ class Sensor(threading.Thread):
             port = self.detect()
 
         self._ser = serial.Serial(port, timeout=TIMEOUT, baudrate=baudrate)
+        self._camera = threading.Thread(target=camera_run)
         self._logfile = logfile
         self._verbose = verbose
         super().__init__(*args, **kwargs)
@@ -71,6 +74,7 @@ class Sensor(threading.Thread):
             "humidity": 0,
             "timestamp": 0,
             "datetime": "",
+            "camera_light": 0,
         }
 
     def detect(self):
@@ -84,12 +88,26 @@ class Sensor(threading.Thread):
         return port
 
 
+    @staticmethod
+    def compute_camera_light():
+        if not os.path.exists(CAMERA_LIGHT):
+            return None
+
+        timestamp = os.path.getmtime(CAMERA_LIGHT)
+        now = time.time()
+        if (now - timestamp) > 300:
+            return None
+        else:
+            im=cv2.imread(CAMERA_LIGHT)
+            return im.mean()
+
     def communicate(self):
 
         code, data = utils.talk(self._ser, "D\n")
         if code != 0:
             raise Exception("Cannot communicate command")
         status, data = utils.safe_json_load(self._ser, data)
+        data["camera_light"] = self.compute_camera_light()
 
         if status == 0:
         
@@ -116,6 +134,7 @@ class Sensor(threading.Thread):
 
 
     def run(self):
+        self._camera.start()
         count = 0
         try:
             while True:
@@ -133,17 +152,17 @@ class Sensor(threading.Thread):
         
     def write(self):
         with open(self._logfile, "a") as fh:
-            fh.write(
-                "%s\t%s\t%s\t%s\t%s\t%s\n"
-                % (
-                    self._data["datetime"],
-                    self._data["temperature"],
-                    self._data["humidity"],
-                    self._data["light"],
-                    self._data["pressure"],
-                    self._data["altitude"],
-                )
+            args=(
+                self._data["datetime"],
+                self._data["temperature"],
+                self._data["humidity"],
+                self._data["light"],
+                self._data["camera_light"],
+                self._data["pressure"],
+                self._data["altitude"],
             )
+            line="%s\t" * (len(args) - 1) + "%s\n"
+            fh.write(line % args)
 
 
 if __name__ == "__main__":

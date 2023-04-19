@@ -30,7 +30,7 @@ def safe_json_load(ser, data):
         else:
             logging.warning(f"Parsing error on port {ser.port}")
             logging.warning(data)
-            data = None
+            data = {}
             status = 1
 
     if status == 2:

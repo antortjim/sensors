@@ -36,6 +36,10 @@ class Server(threading.Thread):
              <div class="card light">
                 <h4><i class="fas fa-sun-o"></i> LIGHT</h4><p><span class="reading"><span id="light">%s (higher -> more light)</span></span></p>
             </div>
+             <div class="card camera light">
+                <h4><i class="fas fa-sun-o"></i> CAMERA LIGHT</h4><p><span class="reading"><span id="camera_light">%s (higher -> more light)</span></span></p>
+            </div>
+
 
             <div class="card pressure">
                 <h4><i class="fas fa-angle-double-down"></i> PRESSURE</h4><p><span class="reading"><span id="pres">%s</span> hPa</span></p>
@@ -88,6 +92,7 @@ class Server(threading.Thread):
             self._sensor.temperature,
             self._sensor.humidity,
             self._sensor.light,
+            self._sensor.camera_light,
             self._sensor.pressure,
             src,
         )
@@ -115,6 +120,7 @@ class Server(threading.Thread):
                     "temperature": self._sensor.temperature,
                     "humidity": self._sensor.humidity,
                     "light": self._sensor.light,
+                    "camera_light": self._sensor.camera_light,
                     "pressure": self._sensor.pressure,
                     "time": self._sensor.datetime,
                 }
